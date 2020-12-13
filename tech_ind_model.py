@@ -12,7 +12,7 @@ from util import csv_to_dataset, history_points
 
 # dataset
 
-ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('MSFT_daily.csv')
+ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('data_daily/AAPL_daily.csv')
 
 test_split = 0.9
 n = int(ohlcv_histories.shape[0] * test_split)
@@ -29,7 +29,6 @@ unscaled_y_test = unscaled_y[n:]
 
 print(ohlcv_train.shape)
 print(ohlcv_test.shape)
-
 
 # model architecture
 

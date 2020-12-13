@@ -19,15 +19,21 @@ def save_dataset(symbol, time_window):
 
     pprint(data.head(10))
 
-    data.to_csv(f'./{symbol}_{time_window}.csv')
+    data.to_csv(f'./data_Daily/{symbol}_{time_window}.csv')
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+stocks = ["BABA", "NVDA"]
 
-    parser.add_argument('symbol', type=str, help="the stock symbol you want to download")
-    parser.add_argument('time_window', type=str, choices=[
-                        'intraday', 'daily', 'daily_adj'], help="the time period you want to download the stock history for")
+for stock in stocks:
 
-    namespace = parser.parse_args()
-    save_dataset(**vars(namespace))
+    save_dataset(stock, "daily")
+
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#
+#     parser.add_argument('symbol', type=str, help="the stock symbol you want to download")
+#     parser.add_argument('time_window', type=str, choices=[
+#                         'intraday', 'daily', 'daily_adj'], help="the time period you want to download the stock history for")
+#
+#     namespace = parser.parse_args()
+#     save_dataset(**vars(namespace))
