@@ -2,10 +2,8 @@ import pandas as pd
 from sklearn import preprocessing
 import numpy as np
 
-history_points = 50
 
-
-def csv_to_dataset(csv_path):
+def csv_to_dataset(csv_path, history_points):
     data = pd.read_csv(csv_path)
     data = data.drop('date', axis=1)
     data = data.drop(0, axis=0)

@@ -7,12 +7,13 @@ import numpy as np
 np.random.seed(4)
 from tensorflow import set_random_seed
 set_random_seed(4)
-from util import csv_to_dataset, history_points
+from util import csv_to_dataset
 
-
+history_points = 50
 # dataset
 
-ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('data_daily/AAPL_daily.csv')
+ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('data_daily/AAPL_daily.csv',
+                                                                                                       history_points)
 
 test_split = 0.9
 n = int(ohlcv_histories.shape[0] * test_split)
