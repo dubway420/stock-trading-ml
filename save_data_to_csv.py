@@ -1,7 +1,7 @@
 from alpha_vantage.timeseries import TimeSeries
 from pprint import pprint
 import json
-import argparse
+from time import sleep as slp
 
 
 def save_dataset(symbol, time_window):
@@ -22,10 +22,12 @@ def save_dataset(symbol, time_window):
     data.to_csv(f'./data_Daily/{symbol}_{time_window}.csv')
 
 
-stocks = ["BABA", "NVDA"]
+stocks = ["NRG", "BAC"]
 
-for stock in stocks:
+for i, stock in enumerate(stocks):
 
+    if i % 5 == 0 and i != 0:
+        slp(60)
     save_dataset(stock, "daily")
 
 # if __name__ == "__main__":
