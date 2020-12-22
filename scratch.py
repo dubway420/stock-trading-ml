@@ -8,7 +8,7 @@ from keras import optimizers
 
 history_points = 50
 
-offset = 1
+offset = 2
 
 ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(
     'data_daily/AAPL_daily.csv',
