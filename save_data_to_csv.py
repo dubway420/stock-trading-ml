@@ -22,7 +22,7 @@ def save_dataset(symbol, time_window):
     data.to_csv(f'./data_Daily/{symbol}_{time_window}.csv')
 
 
-stocks = ["NRG", "BAC"]
+stocks = ["PTON"]
 
 for i, stock in enumerate(stocks):
 
