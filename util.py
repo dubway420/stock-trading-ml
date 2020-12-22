@@ -3,7 +3,7 @@ from sklearn import preprocessing
 import numpy as np
 
 
-def csv_to_dataset(csv_path, history_points, offset):
+def csv_to_dataset(csv_path, history_points, offset, next_day_only=True):
     data = pd.read_csv(csv_path)
     data = data.drop('date', axis=1)
     data = data.drop(0, axis=0)
@@ -15,11 +15,21 @@ def csv_to_dataset(csv_path, history_points, offset):
 
     # using the last {history_points} open close high low volume data points, predict the next open value
     ohlcv_histories_normalised = np.array([data_normalised[i:i + history_points].copy() for i in range(len(data_normalised) - history_points - offset)])
-    next_day_open_values_normalised = np.array([data_normalised[:, 0][i + history_points + offset].copy() for i in range(len(data_normalised) - history_points - offset)])
-    next_day_open_values_normalised = np.expand_dims(next_day_open_values_normalised, -1)
 
-    next_day_open_values = np.array([data[:, 0][i + history_points + offset].copy() for i in range(len(data) - history_points - offset)])
-    next_day_open_values = np.expand_dims(next_day_open_values, -1)
+    if next_day_only:
+        next_day_open_values_normalised = np.array([data_normalised[:, 0][i + history_points + offset].copy() for i in range(len(data_normalised) - history_points - offset)])
+        next_day_open_values_normalised = np.expand_dims(next_day_open_values_normalised, -1)
+
+        next_day_open_values = np.array([data[:, 0][i + history_points + offset].copy() for i in range(len(data) - history_points - offset)])
+        next_day_open_values = np.expand_dims(next_day_open_values, -1)
+
+    else:
+        next_day_open_values_normalised = np.array(
+            [[data_normalised[:, j][i + history_points].copy() for j in range(data.shape[1])] for i in
+             range(len(data_normalised) - history_points)])
+
+        next_day_open_values = np.array([[data[:, j][i + history_points].copy() for j in range(data.shape[1])] for i in
+                                         range(len(data) - history_points)])
 
     y_normaliser = preprocessing.MinMaxScaler()
     y_normaliser.fit(next_day_open_values)

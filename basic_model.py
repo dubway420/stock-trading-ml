@@ -13,7 +13,7 @@ from util import csv_to_dataset
 
 # dataset
 
-def model_training(filepath, history_points=50, offset=0):
+def model_training(filepath, model, history_points=50,  offset=0):
     ohlcv_histories, _, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(filepath, history_points,
                                                                                         offset=offset)
 
@@ -30,18 +30,11 @@ def model_training(filepath, history_points=50, offset=0):
 
     # model architecture
 
-    lstm_input = Input(shape=(history_points, 5), name='lstm_input')
-    x = LSTM(50, name='lstm_0')(lstm_input)
-    x = Dropout(0.2, name='lstm_dropout_0')(x)
-    x = Dense(64, name='dense_0')(x)
-    x = Activation('sigmoid', name='sigmoid_0')(x)
-    x = Dense(1, name='dense_1')(x)
-    output = Activation('linear', name='linear_output')(x)
+    model = model(history_points)
 
-    model = Model(inputs=lstm_input, outputs=output)
     adam = optimizers.Adam(lr=0.0005)
     model.compile(optimizer=adam, loss='mse')
-    trained_model = model.fit(x=ohlcv_train, y=y_train, batch_size=32, epochs=50, shuffle=True, validation_split=0.1)
+    trained_model = model.fit(x=ohlcv_train, y=y_train, batch_size=32, epochs=100, shuffle=True, validation_split=0.1)
 
     # evaluation
 
@@ -69,12 +62,13 @@ def model_training(filepath, history_points=50, offset=0):
     # pred = plt.plot(y_predicted[start:end], label='predicted')
 
     plt.title(filepath)
+
     plt.legend(['Real', 'Predicted'])
 
     plt.show()
 
     from datetime import datetime
-    # model.save(f'basic_model.h5')
+    model.save(f'basic_model.h5')
 
     history = trained_model.history
 
@@ -82,6 +76,8 @@ def model_training(filepath, history_points=50, offset=0):
 
     plt.plot(history['loss'], label="Loss")
     plt.plot(history['val_loss'], label="Val Loss")
+
+    plt.plot([0, len(history['val_loss'])], [history['val_loss'][-1], history['val_loss'][-1]], ls='-')
 
     plt.show()
 

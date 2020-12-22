@@ -4,16 +4,20 @@ from keras.models import Model
 from keras.layers import Dense, Dropout, LSTM, Input, Activation, concatenate
 from keras import optimizers
 import numpy as np
+
 np.random.seed(4)
 from tensorflow import set_random_seed
+
 set_random_seed(4)
 from util import csv_to_dataset
 
 history_points = 50
 # dataset
 
-ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('data_daily/AAPL_daily.csv',
-                                                                                                       history_points)
+ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(
+    'data_daily/AAPL_daily.csv',
+    history_points,
+    0, False)
 
 test_split = 0.9
 n = int(ohlcv_histories.shape[0] * test_split)
@@ -52,15 +56,17 @@ technical_indicators_branch = Model(inputs=dense_input, outputs=y)
 combined = concatenate([lstm_branch.output, technical_indicators_branch.output], name='concatenate')
 
 z = Dense(64, activation="sigmoid", name='dense_pooling')(combined)
-z = Dense(1, activation="linear", name='dense_out')(z)
+z = Dense(next_day_open_values.shape[1], activation="linear", name='dense_out')(z)
 
 # our model will accept the inputs of the two branches and
 # then output a single value
 model = Model(inputs=[lstm_branch.input, technical_indicators_branch.input], outputs=z)
 adam = optimizers.Adam(lr=0.0005)
 model.compile(optimizer=adam, loss='mse')
-model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=50, shuffle=True, validation_split=0.1)
+trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=50, shuffle=True,
+                          validation_split=0.1)
 
+history = trained_model.history
 
 # evaluation
 
@@ -80,8 +86,8 @@ plt.gcf().set_size_inches(22, 15, forward=True)
 start = 0
 end = -1
 
-real = plt.plot(unscaled_y_test[start:end], label='real')
-pred = plt.plot(y_test_predicted[start:end], label='predicted')
+real = plt.plot(unscaled_y_test[start:end][0], label='real')
+pred = plt.plot(y_test_predicted[start:end][0], label='predicted')
 
 # real = plt.plot(unscaled_y[start:end], label='real')
 # pred = plt.plot(y_predicted[start:end], label='predicted')
@@ -90,5 +96,13 @@ plt.legend(['Real', 'Predicted'])
 
 plt.show()
 
+plt.plot(history['loss'], label="Loss")
+plt.plot(history['val_loss'], label="Val Loss")
+
+plt.plot([0, len(history['val_loss'])], [history['val_loss'][-1], history['val_loss'][-1]], ls='-', c='black')
+
+plt.show()
+
 from datetime import datetime
+
 model.save(f'technical_model.h5')
