@@ -3,15 +3,19 @@ from keras.models import load_model
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 from util import csv_to_dataset
-from models import tech_model
+from models import stacked_LSTM as tech_model
 from keras import optimizers
+
+stock = "IBM"
+
+filenm = "data_daily/" + stock + "_daily.csv"
 
 history_points = 50
 
 offset = 2
 
 ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(
-    'data_daily/AAPL_daily.csv',
+    filenm,
     history_points,
     offset=1, next_day_only=True)
 #
@@ -41,7 +45,7 @@ y_test = next_day_open_values[n:]
 model = tech_model(history_points)
 adam = optimizers.Adam(lr=0.0005)
 model.compile(optimizer=adam, loss='mse')
-trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=50, shuffle=True,
+trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=100, shuffle=True,
                           validation_split=0.1)
 #
 history = trained_model.history
@@ -81,7 +85,7 @@ plt.show()
 #
 # from datetime import datetime
 #
-file_name = "tech_model_AAPL_O" + str(offset) + ".H5"
+file_name = "tech_model_" +stock + "_O" + str(offset) + ".H5"
 
 model.save(file_name)
 
@@ -89,20 +93,20 @@ model.save(file_name)
 
 # result_type = 0
 
-model = load_model("tech_model_AAPL_O1.H5")
-
-
-y_test_predicted = y_normaliser.inverse_transform(model.predict([ohlcv_test, tech_ind_test]))
-
-# start = len(y_test_predicted) - 50
-start = 0
-end = 100
-# end = len(y_test_predicted)
-
-pred = plt.scatter(np.arange(start, end), y_test_predicted[start:end], label='predicted')
-
-
-real = plt.scatter(np.arange(start, end), unscaled_y_test[start:end], label='real')
-
-plt.legend()
-plt.show()
+# model = load_model("tech_model_AAPL_O1.H5")
+#
+#
+# y_test_predicted = y_normaliser.inverse_transform(model.predict([ohlcv_test, tech_ind_test]))
+#
+# # start = len(y_test_predicted) - 50
+# start = 0
+# end = 100
+# # end = len(y_test_predicted)
+#
+# pred = plt.scatter(np.arange(start, end), y_test_predicted[start:end], label='predicted')
+#
+#
+# real = plt.scatter(np.arange(start, end), unscaled_y_test[start:end], label='real')
+#
+# plt.legend()
+# plt.show()
