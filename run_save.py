@@ -2,26 +2,36 @@ import numpy as np
 from keras.models import load_model
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
-from util import csv_to_dataset
-from models import stacked_LSTM as tech_model
+from util import csv_to_dataset_days
+from models import stacked_LSTM2 as tech_model
 from keras import optimizers
+from keras.callbacks import ModelCheckpoint
 
-stock = "IBM"
+stock = "GOOGL"
+
+days = 5
+
+file_name = "tech_model_" + stock + "_D" + str(days) + ".H5"
+
+checkpoint_filepath = '/tmp/checkpoint'
+model_checkpoint_callback = ModelCheckpoint(
+    filepath=checkpoint_filepath,
+    save_weights_only=True,
+    monitor='val_loss',
+    mode='min',
+    save_best_only=True)
 
 filenm = "data_daily/" + stock + "_daily.csv"
 
 history_points = 50
 
-offset = 2
-
-ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(
+ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset_days(
     filenm,
     history_points,
-    offset=1, next_day_only=True)
+    days)
 #
 test_split = 0.9
 n = int(ohlcv_histories.shape[0] * test_split)
-
 
 unscaled_y_test = unscaled_y[n:]
 # # real = plt.plot(unscaled_y_test, label='real')
@@ -45,8 +55,8 @@ y_test = next_day_open_values[n:]
 model = tech_model(history_points)
 adam = optimizers.Adam(lr=0.0005)
 model.compile(optimizer=adam, loss='mse')
-trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=100, shuffle=True,
-                          validation_split=0.1)
+trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=1000, shuffle=True,
+                          validation_split=0.1, callbacks=[model_checkpoint_callback])
 #
 history = trained_model.history
 
@@ -64,7 +74,7 @@ print(scaled_mse)
 plt.gcf().set_size_inches(22, 15, forward=True)
 
 start = 0
-end = -1
+end = 5
 
 real = plt.plot(unscaled_y_test[start:end], label='real')
 pred = plt.plot(y_test_predicted[start:end], label='predicted')
@@ -76,7 +86,7 @@ plt.legend(['Real', 'Predicted'])
 
 plt.show()
 
-plt.plot(history['loss'], label="Loss")
+# plt.plot(history['loss'], label="Loss")
 plt.plot(history['val_loss'], label="Val Loss")
 
 plt.plot([0, len(history['val_loss'])], [history['val_loss'][-1], history['val_loss'][-1]], ls='-', c='black')
@@ -85,10 +95,9 @@ plt.show()
 #
 # from datetime import datetime
 #
-file_name = "tech_model_" +stock + "_O" + str(offset) + ".H5"
 
-model.save(file_name)
 
+# model.save(file_name)
 
 
 # result_type = 0
