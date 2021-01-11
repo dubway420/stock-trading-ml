@@ -11,9 +11,9 @@ stock = "GOOGL"
 
 days = 5
 
-file_name = "tech_model_" + stock + "_D" + str(days) + ".H5"
+# file_name =
 
-checkpoint_filepath = '/tmp/checkpoint'
+checkpoint_filepath = "tech_model_" + stock + "_D" + str(days) + ".H5"
 model_checkpoint_callback = ModelCheckpoint(
     filepath=checkpoint_filepath,
     save_weights_only=True,
@@ -55,7 +55,7 @@ y_test = next_day_open_values[n:]
 model = tech_model(history_points)
 adam = optimizers.Adam(lr=0.0005)
 model.compile(optimizer=adam, loss='mse')
-trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=1000, shuffle=True,
+trained_model = model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=300, shuffle=True,
                           validation_split=0.1, callbacks=[model_checkpoint_callback])
 #
 history = trained_model.history
@@ -73,18 +73,18 @@ print(scaled_mse)
 
 plt.gcf().set_size_inches(22, 15, forward=True)
 
-start = 0
-end = 5
-
-real = plt.plot(unscaled_y_test[start:end], label='real')
-pred = plt.plot(y_test_predicted[start:end], label='predicted')
-
-# real = plt.plot(unscaled_y[start:end], label='real')
-# pred = plt.plot(y_predicted[start:end], label='predicted')
-
-plt.legend(['Real', 'Predicted'])
-
-plt.show()
+# start = 0
+# end = 5
+#
+# real = plt.plot(unscaled_y_test[start:end], label='real')
+# pred = plt.plot(y_test_predicted[start:end], label='predicted')
+#
+# # real = plt.plot(unscaled_y[start:end], label='real')
+# # pred = plt.plot(y_predicted[start:end], label='predicted')
+#
+# plt.legend(['Real', 'Predicted'])
+#
+# plt.show()
 
 # plt.plot(history['loss'], label="Loss")
 plt.plot(history['val_loss'], label="Val Loss")
